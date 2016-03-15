@@ -1,3 +1,4 @@
+-- | took me about 45 minutes to finish this
 module DfaToC (dfaToC) where
 
 import Data.List (intersperse)
@@ -27,12 +28,29 @@ dfaToC nfa@(Nfa _ moves q0 f) =
   where
     -- Generate a case statement for state transitions on the character c.
     genCharCase :: Char -> String
-    genCharCase c = error "undefined: genCharCase"
-
+    genCharCase c = 
+        stack $
+        ["      case " ++ show c ++ ":"
+        ,"        switch (state) {"
+        ]
+        ++ 
+        map genTransitionCase [(q1, q2) | Move q1 c' q2 <- toList moves, c' == c]          
+        ++
+        ["          default: return 0;"
+        ,"        }"
+        ,"        break;"
+        ]
+	
     -- Generate a case statement for the given transition. We must set the C
     -- variables state and accept to the proper values.
     genTransitionCase :: (Int,Int) -> String
-    genTransitionCase (q,q') = error "undefined: genTransition"
+    genTransitionCase (q,q') = 
+        stack $
+        ["          case " ++ show q ++ ":"
+        ,"            state = " ++ show q' ++";"
+        ,"            accept = " ++ showIsFinalState q' ++ ";"
+        ,"            break;"
+        ] 
 
     moveList :: [Move Int]
     moveList = toList moves
